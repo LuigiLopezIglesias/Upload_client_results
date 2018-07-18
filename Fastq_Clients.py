@@ -11,7 +11,18 @@ options, args = parser.parse_args()
 # Connection with database and query
 db = sa.create_engine("postgresql://"+os.environ['DB_USER']+":"+os.environ['DB_PASSWORD']+"@"+os.environ['DB_HOST']+"/"+os.environ['DB_NAME'])
 
-result_set = db.execute("select rs.sample_id, m.c_muestra_wineseq, tm.d_tipo_muestra, rs.name, r.name, c.ftp_path, rs.chain_type_id from run_samples rs join runs r on rs.run_id = r.id join muestra m on m.id = rs.sample_id join tipo_muestra tm on tm.c_tipo_muestra = m.c_tipo_muestra join cliente c on c.id = m. id_cliente where r.name = '"+options.Run+"' and processed and processed_history = 1 and m.c_tipo_muestra != 1 and m.c_tipo_muestra != 2 and m.c_tipo_muestra != 3 and m.c_estado = 3 order by m.c_muestra_wineseq;")
+result_set = db.execute('select rs.sample_id, m.c_muestra_wineseq, tm.d_tipo_muestra, rs.name, r.name, c.ftp_path, rs.chain_type_id '
+                         'from  run_samples rs'
+                         ' join runs          r on rs.run_id         = r.id'
+                         ' join muestra       m on m.id              = rs.sample_id'
+                         ' join tipo_muestra tm on tm.c_tipo_muestra = m.c_tipo_muestra'
+                         ' join cliente       c on c.id              = m. id_cliente '
+                         'where r.name = \''+options.Run+'\''
+                         ' and processed'
+                         ' and processed_history = 1'
+                         ' and m.c_tipo_muestra != 1 and m.c_tipo_muestra != 2 and m.c_tipo_muestra != 3' 
+                         ' and m.c_estado = 3 '
+                         'order by m.c_muestra_wineseq;')
 
 # Move and rename Fastq Files
   DbName = i[1]
