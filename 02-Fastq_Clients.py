@@ -31,7 +31,6 @@ result_set = db.execute('select rs.sample_id, m.c_muestra_wineseq, tm.d_tipo_mue
 
 # Move and rename Fastq Files
 for i in result_set:
-  print(i)
   DbName = i[1]
   SampleType = i[2]
   RunName = i[3]
