@@ -4,6 +4,8 @@ import os
 import boto3
 import pandas as pd
 import xlsxwriter
+import pandas.io.formats.excel
+pandas.io.formats.excel.header_style = None
 
 
 parser = optparse.OptionParser()
@@ -38,16 +40,19 @@ for i in result_set:
                                 ' and tm.d_tipo_muestra = \''+i[0]+'\'',db)
   
   writer = pd.ExcelWriter('/home/yamishakka/Escritorio/Clients_references/'+i[1]+'_'+i[0].replace(" ", "_")+'.xlsx', engine='xlsxwriter')
-  sampleTypeClient.to_excel(writer, sheet_name='Sheet1', index=False)
-  pd.io.formats.excel.header = None
+  sampleTypeClient.to_excel(writer, sheet_name='Sheet1', index=False, startrow=1)
   workbook  = writer.book
   worksheet = writer.sheets['Sheet1']
+  worksheet.write('A2', 'Sample Name')
+  worksheet.write('B2', 'Client Reference')
   fmt = writer.book.add_format({"font_name": "Liberation Sans",
                                 "bold": False,
                                 "font_size": 10})
-  worksheet.set_column('A:A', 20, fmt)
-  worksheet.set_column('B:B', 10, fmt)
-  worksheet.set_row(0, None, fmt)
+  worksheet.set_column('A:A', 10, fmt)
+  worksheet.set_column('B:B', 20, fmt)
+  worksheet.set_row(0, 70)
+  worksheet.merge_range('A1:B1', '')
+  worksheet.insert_image('A1', '/home/yamishakka/Documentos/Biomemakers/Logo-BM_DL_negro-1024x323-e1521645909584.png', {'x_offset': 15, 'y_offset': 10})
   writer.save()
   
   ## Upload files to S3
