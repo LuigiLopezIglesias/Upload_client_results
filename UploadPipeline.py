@@ -17,4 +17,4 @@ BMKTo.ClientsAbundances(options.Run)
 BMKTo.ClientsMetadataCreation(options.Run)
 
 ## STEP4:  Give information of samples to comunicate to owners
-BMKTo.ClientsToOwner(Options.Run)
+BMKTo.ClientsToOwner(options.Run)
