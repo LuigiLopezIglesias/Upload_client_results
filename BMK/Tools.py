@@ -47,10 +47,10 @@ def WsFastqMovement(PoolName):
           'Key': sense
         }
         if ChainType == 1:
-          s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+RunName+'/'+DbName+'_S'+sense.split(RunName+'_S',1)[1])
+          s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'/'+DbName+'_S'+sense.split(RunName+'_S',1)[1])
              
         elif ChainType == 2:
-          s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+RunName+'/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
+          s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
         else:
           print('The sample '+DbName+' have a chain type different of Fungus or Bacteria')
        
@@ -156,11 +156,11 @@ def ClientsAbundances(PoolName):
             }
             if ChainType == 'ITS':
               s3.meta.client.copy(copy_source, 'clientresultsftps3', ClientFtpPath +'/'+SampleType.replace(" ", "_")+'/Fungus/Fastq/'+DbName+'_S'+sense.split(RunName+'_S',1)[1])
-              s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+RunName+'/'+DbName+'_S'+sense.split(RunName+'_S',1)[1])
+              s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'/'+DbName+'_S'+sense.split(RunName+'_S',1)[1])
 
             elif ChainType == '16S':
               s3.meta.client.copy(copy_source, 'clientresultsftps3', ClientFtpPath +'/'+SampleType.replace(" ", "_")+'/Bacteria/Fastq/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
-              s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+RunName+'/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
+              s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
             else:
               print('The sample '+DbName+' have a chain type different of Fungus or Bacteria')
 
