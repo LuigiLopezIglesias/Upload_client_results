@@ -29,7 +29,7 @@ def WsFastqMovement(PoolName):
     PoolmixName = row[4]
     ChainType = row[5]
   
-    print('Uploading file \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+DbName +'\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
+    print('Uploading file \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+DbName +'/b\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
 
     client = boto3.client('s3')
     paginator = client.get_paginator('list_objects')
@@ -48,9 +48,8 @@ def WsFastqMovement(PoolName):
         }
         if ChainType == 1:
           s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'/'+DbName+'_S'+sense.split(RunName+'_S',1)[1])
-             
         elif ChainType == 2:
-          s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
+          s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'b/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
         else:
           print('The sample '+DbName+' have a chain type different of Fungus or Bacteria')
        
