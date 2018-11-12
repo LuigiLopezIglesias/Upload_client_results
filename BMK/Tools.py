@@ -159,7 +159,7 @@ def ClientsAbundances(PoolName):
 
             elif ChainType == '16S':
               s3.meta.client.copy(copy_source, 'clientresultsftps3', ClientFtpPath +'/'+SampleType.replace(" ", "_")+'/Bacteria/Fastq/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
-              s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
+              s3.meta.client.copy(copy_source, 'raw-illumina-runs', 'RUN_'+PoolmixName[:4]+'1231/FASTQ/'+PoolmixName[:4]+'1231_'+DbName+'b/'+DbName+'b_S'+sense.split(RunName+'_S',1)[1])
             else:
               print('The sample '+DbName+' have a chain type different of Fungus or Bacteria')
 
