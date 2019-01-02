@@ -65,13 +65,13 @@ def ClientsAbundances(PoolName):
     RunList = Query[Query['r.name'].str.startswith(RunDate)]
     for Chain in RunList['ct.name'].unique():
       SampleGroup = RunList[RunList['ct.name'].str.startswith(Chain)]
-      ### Descarga archivo biom
-      ##client = boto3.client('s3')
-      ##s3 = boto3.resource('s3')
-      ##s3.Bucket('pipeline-analysis-results').download_file(options.Run+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom', '/home/yamishakka/Escritorio/Biomemakers/00-Oldtown_storage/Runs/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
+      ## Descarga archivo biom
+      client = boto3.client('s3')
+      s3 = boto3.resource('s3')
+      s3.Bucket('pipeline-analysis-results').download_file(options.Run+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom', '/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
 
       ## Analisis archivo biom
-      table = biom.load_table('/home/yamishakka/Escritorio/Biomemakers/00-NP_Abundances/'+RunDate[0:8]+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
+      table = biom.load_table('/'+RunDate[0:8]+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
       abunInfo = table.to_dataframe()
       metadataInfo = table.metadata_to_dataframe('observation')
       fullTable = pd.concat([abunInfo, metadataInfo], axis=1)
