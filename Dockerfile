@@ -1,0 +1,56 @@
+# Use an official Python runtime as a parent image
+FROM ubuntu:16.04
+
+## Instal repositories
+Run apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y \
+    apt-utils \
+    build-essential \
+    ca-certificates \
+    gcc \
+    git \
+    libpq-dev \
+    make \
+    python-pip \ 
+    python2.7 \
+    python2.7-dev \
+    ssh \
+    libc6 \
+    libgcc1 \
+    libstdc++6 \
+    python-cogent \
+    python-dateutil \
+    biom-format-tools \
+    python-tk \ 
+    && apt-get autoremove \
+    && apt-get clean \
+    && pip install --upgrade pip 
+
+RUN pip install python-dateutil==2.7.5
+
+ARG ssh_prv_key
+ARG ssh_pub_key
+
+# Authorize SSH Host
+RUN mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh && \
+    ssh-keyscan github.com > /root/.ssh/known_hosts
+
+# Authorize SSH Host
+RUN mkdir -p /root/.ssh && \
+    chmod 0700 /root/.ssh && \
+    ssh-keyscan github.com > /root/.ssh/known_hosts
+
+# Add the keys and set permissions
+RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
+    echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub && \
+    chmod 600 /root/.ssh/id_rsa && \
+    chmod 600 /root/.ssh/id_rsa.pub
+
+COPY requirements.txt UploadPipeline.py / 
+RUN pip install -r requirements.txt
+
+COPY BMK/* /BMK/ 
+# Run app.py when the container launches
+CMD ["python", "/UploadPipeline.py"]

@@ -29,7 +29,7 @@ def WsFastqMovement(PoolName):
     PoolmixName = row[4]
     ChainType = row[5]
   
-    print('Uploading file \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+DbName +'/b\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
+    print('Uploading file \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+RunName+'\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
 
     client = boto3.client('s3')
     paginator = client.get_paginator('list_objects')
@@ -38,8 +38,9 @@ def WsFastqMovement(PoolName):
 
     page_iterator = paginator.paginate(**operation_parameters)
     for page in page_iterator:
-      forward = page['Contents'][0]['Key']
-      reverse = page['Contents'][1]['Key']
+      number = len(page['Contents'])
+      forward = page['Contents'][number-2]['Key']
+      reverse = page['Contents'][number-1]['Key']
       for sense in (forward,reverse):
         s3 = boto3.resource('s3')
         copy_source = {
@@ -145,8 +146,9 @@ def ClientsAbundances(PoolName):
 
         page_iterator = paginator.paginate(**operation_parameters)
         for page in page_iterator:
-          forward = page['Contents'][0]['Key']
-          reverse = page['Contents'][1]['Key']
+          number = len(page['Contents'])
+          forward = page['Contents'][number-2]['Key']
+          reverse = page['Contents'][number-1]['Key']
           for sense in (forward,reverse):
             s3 = boto3.resource('s3')
             copy_source = {
