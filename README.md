@@ -37,3 +37,8 @@ This step makes a creation of Metadata file by Client and sample type that will 
 
 In this point a list of finished samples will be uploaded to Database where owners will be comunicated of storaged of files for FTP clients (if a wineseq want to be required will be a manual process)
 
+### Execution of docker
+
+`docker build -t luigi/upload:0.10 --build-arg ssh_prv_key="$(cat ./github_rsa)" --build-arg ssh_pub_key="$(cat ./github_rsa.pub)" .`
+
+`docker run --name Upload20181220 --env-file env.list -e RunDate=20181220 luigi/upload:0.10`

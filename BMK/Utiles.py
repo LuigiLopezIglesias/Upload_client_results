@@ -7,7 +7,8 @@ Several util classes used in the rest of the project
 
 # Includes
 import os
-
+import pandas as pd
+import boto3
 # ------------------------------------------------------------------------------------------------------------------- #
 
 

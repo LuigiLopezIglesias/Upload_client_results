@@ -62,13 +62,17 @@ def ClientsAbundances(PoolName):
   Query.columns = ['rs.sample_id', 'm.c_muestra_wineseq', 'tm.d_tipo_muestra', 'rs.name', 'r.name', 'ct.name', 'c.ftp_path']
   print(Query)
   for RunDate in Query['r.name'].unique():
+    print(RunDate)
     RunList = Query[Query['r.name'].str.startswith(RunDate)]
     for Chain in RunList['ct.name'].unique():
+      print(Chain)
       SampleGroup = RunList[RunList['ct.name'].str.startswith(Chain)]
+      print(SampleGroup)
       ## Descarga archivo biom
       client = boto3.client('s3')
       s3 = boto3.resource('s3')
-      s3.Bucket('pipeline-analysis-results').download_file(options.Run+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom', '/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
+      ### CAMBIAR DE BRANCH Y DESCARGAR EL ARCHIVO BION ###
+      #s3.Bucket('pipeline-analysis-results').download_file(options.Run+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom', '/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
 
       ## Analisis archivo biom
       table = biom.load_table('/'+RunDate[0:8]+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
