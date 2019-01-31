@@ -12,15 +12,15 @@ options, args = parser.parse_args()
 
 ## STEP0: Git
 #BMKU.create_dir(os.getcwd()+'Run4Jenkins/'+options.Date)
-BMKU.create_dir('/Results'+'/'+options.Date)
-repo = git.Repo.clone_from('git@github.com:BiomeMakers/Run4Jenkins.git', '/Run4Jenkins/')
-for marker in ['16s', 'its']:
- # Change branch to take information about hash
- print("Changing branch to \x1b[1;36;10m"+options.Date+"_"+marker+"\x1b[0m")
- repo.git.checkout(options.Date+'_'+marker.upper())
- # Download biom files
- print("Downloading mapped biom file to \x1b[1;36;10m"+os.getcwd()+'Results'+'/'+options.Date+"\x1b[0m")
- BMKU.fileDownloader(options.Date, marker, '/Results', '/Run4Jenkins/')
+#BMKU.create_dir('/Results'+'/'+options.Date)
+#repo = git.Repo.clone_from('git@github.com:BiomeMakers/Run4Jenkins.git', '/Run4Jenkins/')
+#for marker in ['16s', 'its']:
+# # Change branch to take information about hash
+# print("Changing branch to \x1b[1;36;10m"+options.Date+"_"+marker+"\x1b[0m")
+# repo.git.checkout(options.Date+'_'+marker.upper())
+# # Download biom files
+# print("Downloading mapped biom file to \x1b[1;36;10m"+os.getcwd()+'Results'+'/'+options.Date+"\x1b[0m")
+# BMKU.fileDownloader(options.Date, marker, '/Results', '/Run4Jenkins/')
 
 
 # STEP1: Upload good fastq and not BMK

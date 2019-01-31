@@ -12,10 +12,12 @@ Tools to be called in principal script
 import boto3
 import os
 import BMK.Queries as Qr
+import BMK.Utiles  as U
 import pandas      as pd
 import biom
 import xlsxwriter
 import pandas.io.formats.excel
+import git
 pandas.io.formats.excel.header_style = None
 
 #--# Fastq Moving fastq from Run S3 and Clients FTP when is finished --------------------------------
@@ -58,24 +60,30 @@ def WsFastqMovement(PoolName):
 #--# Creation of abundances excels to client FTP -----------------------------------------------------  
 
 def ClientsAbundances(PoolName):
+  repo = git.Repo.clone_from('git@github.com:BiomeMakers/Run4Jenkins.git', '/Run4Jenkins/')
   Query = Qr.DBAbundancesQuery(PoolName)
   Query.columns = ['rs.sample_id', 'm.c_muestra_wineseq', 'tm.d_tipo_muestra', 'rs.name', 'r.name', 'ct.name', 'c.ftp_path']
-  print(Query)
+  #print(Query)
   for RunDate in Query['r.name'].unique():
-    print(RunDate)
     RunList = Query[Query['r.name'].str.startswith(RunDate)]
     for Chain in RunList['ct.name'].unique():
-      print(Chain)
       SampleGroup = RunList[RunList['ct.name'].str.startswith(Chain)]
       print(SampleGroup)
       ## Descarga archivo biom
       client = boto3.client('s3')
       s3 = boto3.resource('s3')
       ### CAMBIAR DE BRANCH Y DESCARGAR EL ARCHIVO BION ###
-      #s3.Bucket('pipeline-analysis-results').download_file(options.Run+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom', '/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
+      U.create_dir('/Results'+'/'+RunDate[0:8])
+     # for marker in ['16s', 'its']:
+      # Change branch to take information about hash
+      print("Changing branch to \x1b[1;36;10m"+RunDate[0:8]+"_"+Chain+"\x1b[0m")
+      repo.git.checkout(RunDate[0:8]+"_"+Chain)
+      # Download biom files
+      print("Downloading mapped biom file to \x1b[1;36;10m"+os.getcwd()+'Results/'+RunDate[0:8]+"\x1b[0m")
+      U.fileDownloader(RunDate[0:8], Chain, '/Results', '/Run4Jenkins/')
 
       ## Analisis archivo biom
-      table = biom.load_table('/'+RunDate[0:8]+'/'+Chain+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
+      table = biom.load_table('/Results/'+RunDate[0:8]+'/'+Chain.lower()+'_'+RunDate[0:8]+'_mapped_reads_tax.biom')
       abunInfo = table.to_dataframe()
       metadataInfo = table.metadata_to_dataframe('observation')
       fullTable = pd.concat([abunInfo, metadataInfo], axis=1)
@@ -85,6 +93,8 @@ def ClientsAbundances(PoolName):
       goodCV.taxonomy_6 = goodCV.taxonomy_6.str[2:]
       goodCV = goodCV.drop(['confidence', 'taxonomy_0', 'taxonomy_1', 'taxonomy_2', 'taxonomy_3', 'taxonomy_4', 'taxonomy_5', 'taxonomy_6'], axis=1)
       goodCV = goodCV.rename(columns={'taxonomy_6': 'Species'})
+      goodCV['Species'] = goodCV['Species'].str.replace('Bacillus anthracis','Bacillus sp.')
+      goodCV['Species'] = goodCV['Species'].str.replace('Cronobacter mallotivora','Pantoea sp.')
       goodCV = goodCV.sort_values(by=['Species'])
 
       for index ,row in SampleGroup.iterrows():
@@ -94,7 +104,7 @@ def ClientsAbundances(PoolName):
         PoolmixName = row[4]
         ChainType = row[5]
         ClientFtpPath = row[6]
-        print('Uploading sample \x1b[1;31;10m'+RunName+'\x1b[0m to client \x1b[1;31;10m'+ClientFtpPath+'\x1b[0m of sample type \x1b[1;31;10m'+SampleType+'\x1b[0m from Run \x1b[1;31;10m'+PoolmixName+'\x1b[0m')
+        print('Uploading sample \x1b[1;31;10m'+RunName+'\x1b[0m to client \x1b[1;31;10m'+ClientFtpPath+'\x1b[0m of sample type \x1b[1;31;10m'+SampleType+'\x1b[0m from Run \x1b[1;31;10m'+PoolName+'\x1b[0m')
 
         ## Si el usuario tiene OTU_Abundance se hace aqui
 
@@ -105,13 +115,12 @@ def ClientsAbundances(PoolName):
         sampIndividual = sampIndividual*100/sampIndividual[RunName].sum()
         sampInd = sampIndividual[sampIndividual[RunName]>0]
         sampInd = sampInd.sort_values(by=RunName, ascending=False)
-        if not os.path.exists('/home/yamishakka/Escritorio/Biomemakers/00-NP_Abundances/'+PoolmixName[0:8]+'/'+Chain+'_Individuales'):
-          os.makedirs('/home/yamishakka/Escritorio/Biomemakers/00-NP_Abundances/'+PoolmixName[0:8]+'/'+Chain+'_Individuales')
+        U.create_dir('Results/'+PoolName+'/Abundances'+'/'+Chain+'_'+PoolName)
 
         if Chain == '16S':
-          writer = pd.ExcelWriter('/home/yamishakka/Escritorio/Biomemakers/00-NP_Abundances/'+PoolmixName[0:8]+'/'+Chain+'_Individuales/'+DbName+'b_Bacteria.xlsx', engine='xlsxwriter')
+          writer = pd.ExcelWriter('Results/'+PoolName+'/Abundances'+'/'+Chain+'_'+PoolName+'/'+DbName+'b_Bacteria.xlsx', engine='xlsxwriter')
         else:
-          writer = pd.ExcelWriter('/home/yamishakka/Escritorio/Biomemakers/00-NP_Abundances/'+PoolmixName[0:8]+'/'+Chain+'_Individuales/'+DbName+'_Fungus.xlsx', engine='xlsxwriter')
+          writer = pd.ExcelWriter('Results/'+PoolName+'/Abundances'+'/'+Chain+'_'+PoolName+'/'+DbName+'_Fungus.xlsx', engine='xlsxwriter')
 
         sampInd.to_excel(writer, sheet_name='Sheet1', startrow=1)
         workbook  = writer.book
@@ -127,17 +136,18 @@ def ClientsAbundances(PoolName):
         worksheet.set_column('B:B', 10, fmt)
         worksheet.set_row(0, 70)
         worksheet.merge_range('A1:B1', '')
-        worksheet.insert_image('A1', '/home/yamishakka/Documentos/Biomemakers/Logo-BM_DL_negro-1024x323-e1521645909584.png', {'x_offset': 15, 'y_offset': 10})
+        worksheet.insert_image('A1', '/Logo-BM_DL_negro.png', {'x_offset': 15, 'y_offset': 10})
+        #worksheet.insert_image('A1', '/s/Logo-BM_DL_negro-1024x323-e1521645909584.png', {'x_offset': 15, 'y_offset': 10})
         writer.save()
 
         ## Upload excel files to FTP
         client = boto3.client('s3')
         s3 = boto3.resource('s3')
         if Chain == '16S':
-          data = open('/home/yamishakka/Escritorio/Biomemakers/00-NP_Abundances/'+PoolmixName[0:8]+'/'+Chain+'_Individuales/'+DbName+'b_Bacteria.xlsx', 'rb')
+          data = open('Results/'+PoolName+'/Abundances'+'/'+Chain+'_'+PoolName+'/'+DbName+'b_Bacteria.xlsx', 'rb')
           s3.Bucket('clientresultsftps3').put_object(Key=ClientFtpPath+'/'+SampleType.replace(" ", "_")+'/Bacteria/Abundances/'+DbName+'b_Bacteria.xlsx', Body=data)
         else:
-          data = open('/home/yamishakka/Escritorio/Biomemakers/00-NP_Abundances/'+PoolmixName[0:8]+'/'+Chain+'_Individuales/'+DbName+'_Fungus.xlsx', 'rb')
+          data = open('Results/'+PoolName+'/Abundances'+'/'+Chain+'_'+PoolName+'/'+DbName+'_Fungus.xlsx', 'rb')
           s3.Bucket('clientresultsftps3').put_object(Key=ClientFtpPath+'/'+SampleType.replace(" ", "_")+'/Fungus/Abundances/'+DbName+'_Fungus.xlsx', Body=data)
 
         ## Upload Fastq to S3 and FTP

@@ -37,7 +37,6 @@ def fileDownloader(Project, marker, ResultPath, GitPath):
   for index, row in gitInfo.iterrows():
     Marker = row[0]
     S3path = row[1]
-
     ## Download mapped file
     s3 = boto3.resource('s3')
     try:
