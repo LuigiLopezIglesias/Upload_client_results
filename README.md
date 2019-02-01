@@ -17,17 +17,17 @@ The principal script is an schema of all steps that i do after upload results in
 
 ### Step 1
 
-In this step the write Fastq of Wineseq are storage in good repository in S3 (YEAR1231) and inf the right file is a repetition (SAMPLE-2, SAMPLE-3, ...) this name will be change good consistent name (SAMPLE)
+In this step the right and finished samples, Fastq of Wineseq are storage in good repository in S3 (*YEAR1231*) and if the right file is a repetition (*SAMPLE-2*, *SAMPLE-3*, ...) this name will be change good to consistent name (*SAMPLE*)
 
 ### Step 2
 
 In this case 3 process will be make at the same time:
 
-1. Upload right fastq of Biomemaker samples to client FTP folder with right name
+1. Upload right and finished fastq of Biomemaker samples to client FTP folder with right name
 
-2. Upload right fastq of Biomemaker samples to S3 good repository
+2. Upload right and finished fastq of Biomemaker samples to S3 good repository
 
-3. Upload Excel file of abundances with results in percentaje
+3. Upload Excel file of abundances with results in percentaje in client FTP folder
 
 ### Step 3
 
@@ -39,6 +39,8 @@ In this point a list of finished samples will be uploaded to Database where owne
 
 ### Execution of docker
 
-`docker build -t luigi/upload:0.10 --build-arg ssh_prv_key="$(cat ./github_rsa)" --build-arg ssh_pub_key="$(cat ./github_rsa.pub)" .`
+`docker build -t luigi/upload:1.00 --build-arg ssh_prv_key="$(cat ./github_rsa)" --build-arg ssh_pub_key="$(cat ./github_rsa.pub)" .`
 
-`docker run --name Upload20181220 --env-file env.list -e RunDate=20181220 luigi/upload:0.10`
+`docker run -ti --name Upload*Date* --env-file env.list -e RunDate=*Date* luigi/upload:1.00`
+
+e.g.:`docker run -ti --name Upload20190123 --env-file env.list -e RunDate=20190123 luigi/upload:0.10`
