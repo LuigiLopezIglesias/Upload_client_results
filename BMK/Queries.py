@@ -67,17 +67,17 @@ def DBAbundancesQuery(PoolName):
 
 #--# Query against Database for metadata information--------------------------------------------------
 def DBMetadataQuery(PoolName):
-  return DBconexion().execute('SELECT distinct tm.d_tipo_muestra, c.ftp_path, m.id_cliente '
-                           '     FROM run_samples rs'
-                           '     JOIN runs          r ON rs.run_id         = r.id'
-                           '     JOIN muestra       m ON m.id              = rs.sample_id'
-                           '     JOIN tipo_muestra tm ON tm.c_tipo_muestra = m.c_tipo_muestra'
-                           '     JOIN cliente       c ON c.id              = m. id_cliente '
-                           '    WHERE r.name = \''+PoolName+'\''
-                           '      AND processed_history = 1'
-                           '      AND m.c_tipo_muestra NOT IN (1,2,3)'
-                           '      AND m.c_estado = 3 '
-                           ' ORDER BY m.id_cliente ')
+  return pd.read_sql_query('SELECT distinct tm.d_tipo_muestra, c.ftp_path, m.id_cliente '
+                        '     FROM run_samples rs'
+                        '     JOIN runs          r ON rs.run_id         = r.id'
+                        '     JOIN muestra       m ON m.id              = rs.sample_id'
+                        '     JOIN tipo_muestra tm ON tm.c_tipo_muestra = m.c_tipo_muestra'
+                        '     JOIN cliente       c ON c.id              = m. id_cliente '
+                        '    WHERE r.name = \''+PoolName+'\''
+                        '      AND processed_history = 1'
+                        '      AND m.c_tipo_muestra NOT IN (1,2,3)'
+                        '      AND m.c_estado = 3 '
+                        ' ORDER BY m.id_cliente ',DBconexion())
 
 #--# Query to know finished samples for client and sampletype----------------------------------------- 
 def DBClientQuery(client, SampleType):

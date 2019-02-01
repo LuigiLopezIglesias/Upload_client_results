@@ -23,6 +23,8 @@ pandas.io.formats.excel.header_style = None
 #--# Fastq Moving fastq from Run S3 and Clients FTP when is finished --------------------------------
 def WsFastqMovement(PoolName):
   Query = Qr.DBWsFastqQuery(PoolName)
+  sampleNumber = len(Query.index)
+  count = 1
   print(Query)
   for index, row in Query.iterrows():
     DbName = row[1] 
@@ -31,13 +33,13 @@ def WsFastqMovement(PoolName):
     PoolmixName = row[4]
     ChainType = row[5]
   
-    print('Uploading file \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+RunName+'\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
+    print('Uploading file (\x1b[1;33;10m'+str(count)+'/'+str(sampleNumber)+'\x1b[0m) \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+RunName+'\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
 
     client = boto3.client('s3')
     paginator = client.get_paginator('list_objects')
     operation_parameters = {'Bucket': 'raw-illumina-runs',
                             'Prefix': 'RUN_'+PoolmixName[:8]+'/FASTQ/'+PoolmixName[:8]+'_'+RunName+'/'}
-
+    count = count+1
     page_iterator = paginator.paginate(**operation_parameters)
     for page in page_iterator:
       number = len(page['Contents'])
@@ -63,7 +65,10 @@ def ClientsAbundances(PoolName):
   repo = git.Repo.clone_from('git@github.com:BiomeMakers/Run4Jenkins.git', '/Run4Jenkins/')
   Query = Qr.DBAbundancesQuery(PoolName)
   Query.columns = ['rs.sample_id', 'm.c_muestra_wineseq', 'tm.d_tipo_muestra', 'rs.name', 'r.name', 'ct.name', 'c.ftp_path']
+  sampleNumber = len(Query.index)
+  count = 1
   #print(Query)
+  print(Query['r.name'].unique())
   for RunDate in Query['r.name'].unique():
     RunList = Query[Query['r.name'].str.startswith(RunDate)]
     for Chain in RunList['ct.name'].unique():
@@ -137,7 +142,6 @@ def ClientsAbundances(PoolName):
         worksheet.set_row(0, 70)
         worksheet.merge_range('A1:B1', '')
         worksheet.insert_image('A1', '/Logo-BM_DL_negro.png', {'x_offset': 15, 'y_offset': 10})
-        #worksheet.insert_image('A1', '/s/Logo-BM_DL_negro-1024x323-e1521645909584.png', {'x_offset': 15, 'y_offset': 10})
         writer.save()
 
         ## Upload excel files to FTP
@@ -151,8 +155,8 @@ def ClientsAbundances(PoolName):
           s3.Bucket('clientresultsftps3').put_object(Key=ClientFtpPath+'/'+SampleType.replace(" ", "_")+'/Fungus/Abundances/'+DbName+'_Fungus.xlsx', Body=data)
 
         ## Upload Fastq to S3 and FTP
-        print('Uploading file \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+DbName +'\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m to \x1b[1;35;10m'+ClientFtpPath+'\x1b[0m client of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
-
+        print('Uploading file (\x1b[1;33;10m'+str(count)+'/'+str(sampleNumber)+'\x1b[0m) \x1b[1;31;10m'+RunName+'\x1b[0m --> \x1b[1;33;10m'+DbName +'\x1b[0m with type \x1b[1;36;10m'+SampleType+'\x1b[0m to \x1b[1;35;10m'+ClientFtpPath+'\x1b[0m client of run \x1b[1;31;10m'+PoolmixName[0:8]+'\x1b[0m and storage in \x1b[1;33;10m'+PoolmixName[:4]+'1231\x1b[0m')
+        count = count+1
         client = boto3.client('s3')
         paginator = client.get_paginator('list_objects')
         operation_parameters = {'Bucket': 'raw-illumina-runs',
@@ -183,14 +187,17 @@ def ClientsAbundances(PoolName):
 
 def ClientsMetadataCreation(PoolName):
   Query = Qr.DBMetadataQuery(PoolName)
-  for row in Query:
+  print(Query)
+  for index ,row in Query.iterrows():
+  #for row in Query:
     SampleType = row[0]
     ClientName = row[1]
     ClientID   = row[2]
     print('File with information of client \x1b[1;31;10m'+ClientName+'\x1b[0m and sample type \x1b[1;33;10m'+SampleType+'\x1b[0m' )
     sampleTypeClient = Qr.DBClientQuery(ClientID, SampleType)
     ## Excel creation
-    writer = pd.ExcelWriter('/home/yamishakka/Escritorio/Clients_references/'+ClientName+'_'+SampleType.replace(" ", "_")+'.xlsx', engine='xlsxwriter')
+    U.create_dir('Results/'+PoolName+'/ClientExcel')
+    writer = pd.ExcelWriter('Results/'+PoolName+'/ClientExcel/'+ClientName+'_'+SampleType.replace(" ", "_")+'.xlsx', engine='xlsxwriter')
     sampleTypeClient.to_excel(writer, sheet_name='Sheet1', index=False, startrow=1)
     workbook  = writer.book
     worksheet = writer.sheets['Sheet1']
@@ -203,13 +210,13 @@ def ClientsMetadataCreation(PoolName):
     worksheet.set_column('B:B', 20, fmt)
     worksheet.set_row(0, 70)
     worksheet.merge_range('A1:B1', '')
-    worksheet.insert_image('A1', '/home/yamishakka/Documentos/Biomemakers/Logo-BM_DL_negro-1024x323-e1521645909584.png', {'x_offset': 15, 'y_offset': 10})
+    worksheet.insert_image('A1', '/Logo-BM_DL_negro.png', {'x_offset': 15, 'y_offset': 10})
     writer.save()
   
     ## Upload files to S3
     client = boto3.client('s3')
     s3 = boto3.resource('s3')
-    data = open('/home/yamishakka/Escritorio/Clients_references/'+ClientName+'_'+SampleType.replace(" ", "_")+'.xlsx', 'rb')
+    data = open('Results/'+PoolName+'/ClientExcel/'+ClientName+'_'+SampleType.replace(" ", "_")+'.xlsx', 'rb')
     s3.Bucket('clientresultsftps3').put_object(Key=ClientName+'/'+SampleType.replace(" ", "_")+'/'+ClientName+'_'+SampleType.replace(" ", "")+'.xlsx', Body=data)
 
 #--# Upload Finished samples to comunicate to owners -------------------------------------------------
