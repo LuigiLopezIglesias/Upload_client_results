@@ -43,4 +43,4 @@ In this point a list of finished samples will be uploaded to Database where owne
 
 `docker run -ti --name Upload*Date* --env-file env.list -e RunDate=*Date* luigi/upload:1.00`
 
-e.g.:`docker run -ti --name Upload20190123 --env-file env.list -e RunDate=20190123 luigi/upload:0.10`
+e.g.:`docker run -ti --name Upload20190123 --env-file env.list -e RunDate=20190123 luigi/upload:1.00`
